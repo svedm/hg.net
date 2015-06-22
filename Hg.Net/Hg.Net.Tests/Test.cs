@@ -3,14 +3,17 @@ using System;
 
 namespace Hg.Net.Tests
 {
-	[TestFixture()]
-	public class Test
+	[TestFixture]
+	public class HgClinetTest
 	{
-		[Test()]
-		public void TestCase()
+		[Test]
+		public void StartTest()
 		{
-			var a = 1;
-			Assert.AreEqual(a, 1);
+			var hgClient = new HgClient();
+			var res = hgClient.Connect(@"C:\\");
+			Assert.AreEqual(res, true);
+			Assert.IsFalse(string.IsNullOrEmpty(hgClient.HgEncoding));
+			Assert.IsTrue(hgClient.Capabilities.Count > 0);
 		}
 	}
 }
