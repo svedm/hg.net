@@ -43,7 +43,10 @@ namespace Hg.Net
 			{
 				_cmdServer = Process.Start(serverInfo);
 			}
-			catch (Exception) { return false; }
+			catch (Exception)
+			{
+				return false;
+			}
 
 			return Hello();
 		}
@@ -81,7 +84,7 @@ namespace Hg.Net
 		}
 
 
-		private int ReadBytes(Stream stream, byte[] buffer, int offset, int length)
+		private static int ReadBytes(Stream stream, byte[] buffer, int offset, int length)
 		{
 			var remaining = length;
 			var read = 1;
@@ -96,7 +99,58 @@ namespace Hg.Net
 			return length - remaining;
 		}
 
-		private int GetMessageLength(byte[] buffer, int offset)
+		public void RunCommand(IEnumerable<string> command)
+		{
+			var commandBuffer = Encoding.UTF8.GetBytes("runcommand\n");
+			var argBuffer = command.Aggregate(new List<byte>(), (b, a) =>
+			{
+				b.AddRange(Encoding.UTF8.GetBytes(a));
+				b.Add(0);
+				return b;
+			}, b =>
+			{
+				b.RemoveAt(b.Count - 1);
+				return b.ToArray();
+			}).ToArray();
+
+			var lenBuffer = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(argBuffer.Length));
+
+			lock (_cmdServer)
+			{
+				_cmdServer.StandardInput.BaseStream.Write(commandBuffer, 0, commandBuffer.Length);
+				_cmdServer.StandardInput.BaseStream.Write(lenBuffer, 0, lenBuffer.Length);
+				_cmdServer.StandardInput.BaseStream.Write(argBuffer, 0, argBuffer.Length);
+				_cmdServer.StandardInput.BaseStream.Flush();
+
+
+				var buffer = new byte[HeaderLength];
+				var readCount = ReadBytes(_cmdServer.StandardOutput.BaseStream, buffer, 0, HeaderLength);
+
+				if (readCount != HeaderLength)
+				{
+					//return false;
+				}
+
+				var messageLen = GetMessageLength(buffer, 1);
+
+				var messageBuffer = new byte[messageLen];
+
+				readCount = ReadBytes(_cmdServer.StandardOutput.BaseStream, messageBuffer, 0, messageLen);
+
+				if (readCount != messageLen)
+				{
+					//return false;
+				}
+
+				var message = Encoding.UTF8.GetString(messageBuffer);
+
+			}
+
+		}
+
+
+
+		private static int GetMessageLength(byte[] buffer, int offset)
 		{
 			return IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, offset));
 		}

@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 
 namespace Hg.Net.Tests
 {
@@ -14,6 +15,14 @@ namespace Hg.Net.Tests
 			Assert.AreEqual(res, true);
 			Assert.IsFalse(string.IsNullOrEmpty(hgClient.HgEncoding));
 			Assert.IsTrue(hgClient.Capabilities.Count > 0);
+		}
+
+		[Test]
+		public void RunCommandTest()
+		{
+			var hgClient = new HgClient();
+			var res = hgClient.Connect(@"C:\\");
+			hgClient.RunCommand(new List<string> { "summary" });
 		}
 	}
 }
