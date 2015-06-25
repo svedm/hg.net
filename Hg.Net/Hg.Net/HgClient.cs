@@ -85,7 +85,7 @@ namespace Hg.Net
 			return length - remaining;
 		}
 
-		public int RunCommand(IEnumerable<string> command, IDictionary<Channel, Stream> outputs)
+		private int RunCommand(IEnumerable<string> command, IDictionary<Channel, Stream> outputs)
 		{
 			var commandBuffer = Encoding.UTF8.GetBytes("runcommand\n");
 			var enumerable = command as string[] ?? command.ToArray();
