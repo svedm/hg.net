@@ -40,6 +40,7 @@ namespace Hg.Net
 				UseShellExecute = false
 			};
 
+			Environment.SetEnvironmentVariable("HGENCODING", "UTF-8");
 			try
 			{
 				_cmdServer = Process.Start(serverInfo);
